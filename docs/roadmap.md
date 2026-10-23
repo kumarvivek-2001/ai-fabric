@@ -1,100 +1,70 @@
 # AI Fabric — Development Roadmap
 
-## Project Goal
+## Goal
 
-Build an AI gateway that provides a unified model API, configurable routing, useful observability, and reliable request handling.
+Build an explainable AI execution control plane that validates requests, analyzes workloads, selects a suitable configured model route, executes through Nebius/NVIDIA infrastructure, handles failures safely, and records verifiable operational results.
 
-The project will prioritize working software, reproducible tests, measurable results, and clear documentation.
+This roadmap preserves the existing six implementation phases and maps the original detailed plan into them. `master-checklist.md` is the task-level source of truth.
 
-## Phase 0 — Foundation and Documentation
+## Status labels
 
-- [x] Create the project directory.
-- [x] Create the documentation directory.
-- [x] Write the project README.
-- [x] Document the proposed architecture.
-- [x] Document the development setup.
-- [ ] Document the project roadmap.
+- `DONE` — implemented and verified with evidence.
+- `IN PROGRESS` — actively being implemented.
+- `PENDING` — not yet completed.
+- `BLOCKED` — waiting for external access/resource.
+- `FUTURE` — tracked for later SaaS scope, not silently forgotten.
 
-**Completion criterion:** The initial project documentation is present and reviewed.
+Documentation alone does not prove implementation.
 
-## Phase 1 — Local Development Foundation
+## Phase 0 — Product definition and foundation
 
-- [ ] Inspect the Python environment.
-- [ ] Create and activate a Python virtual environment.
-- [ ] Add application dependencies.
-- [ ] Establish the application package structure.
-- [ ] Create a FastAPI application.
-- [ ] Implement a health endpoint.
-- [ ] Add an initial automated test.
-- [ ] Run the application locally and verify the test.
+Define the problem/user, product direction, hackathon requirements, constraints, MVP versus future SaaS scope, and consistent documentation.
 
-**Completion criterion:** The application starts locally, the health endpoint responds correctly, and the test passes.
+**Completion:** product scope and requirements are documented, and status claims are honest.
+**Status:** initial docs exist; detailed requirements and official-rule recheck remain.
 
-## Phase 2 — Model Integration
+## Phase 1 — System design
 
-- [ ] Define request and response schemas.
-- [ ] Implement the chat-completions API.
-- [ ] Add a provider adapter.
-- [ ] Configure a compatible NVIDIA model endpoint.
-- [ ] Load credentials from environment variables.
-- [ ] Test a real model request when endpoint access is available.
-- [ ] Handle invalid requests and provider errors.
+Define request lifecycle, module boundaries, API contracts/errors, workload features, routing modes, PostgreSQL schema, Redis responsibilities, provider capabilities, retry/fallback rules, observability, security/privacy, tests, and benchmark method.
 
-**Completion criterion:** A valid request can reach the configured model and return a response, or an explicitly tested mock is used when the external endpoint is unavailable.
+**Completion:** design decisions are recorded and usable during implementation.
+**Status:** initial architecture exists; detailed contracts/design docs remain.
 
-## Phase 3 — Routing and Reliability
+## Phase 2 — Coding foundation and persistence
 
-- [ ] Add configurable model selection.
-- [ ] Implement request timeouts.
-- [ ] Add safe error handling.
-- [ ] Implement bounded retries where appropriate.
-- [ ] Add fallback routing if a second provider is available.
-- [ ] Test routing and failure scenarios.
+Keep the environment reproducible; evolve the current app without breaking it; verify health/chat endpoints; maintain compatible dependencies; add configuration and `.env.example`; start PostgreSQL/Redis with Compose; implement SQLAlchemy models, Alembic migrations, execution history, routing decisions, and persistence tests.
 
-**Completion criterion:** Routing decisions and failure behavior are tested and documented.
+**Completion:** app/tests work locally and migration/persistence tests pass.
+**Status:** FastAPI prototype exists; persistence pending.
 
-## Phase 4 — Observability
+## Phase 3 — API contracts and real Nebius/NVIDIA integration
 
-- [ ] Record request status and latency.
-- [ ] Track errors and available token usage.
-- [ ] Add structured logs.
-- [ ] Add basic metrics.
-- [ ] Prevent credentials and sensitive content from appearing in logs.
-- [ ] Measure baseline performance.
+Define schemas and consistent errors; evolve `/v1/chat/completions`; add `model: "auto"` and routing constraints; implement provider adapter; verify a real request through Nebius Token Factory using an eligible NVIDIA open model (or an allowed alternative); test invalid credentials, unavailable model, timeout, and provider errors. Keep mock tests distinct from live integration.
 
-**Completion criterion:** Test results and measurements can be reproduced.
+**Completion:** real model request is repeatable, or external access is explicitly marked blocked. A mock does not satisfy live-runtime requirements.
+**Status:** proxy prototype exists; live model call not verified.
 
-## Phase 5 — Containerization and Deployment
+## Phase 4 — Workload analysis, intelligent routing, and cost policy
 
-- [ ] Create a Dockerfile.
-- [ ] Add Docker Compose configuration if useful.
-- [ ] Build and run the application in a container.
-- [ ] Verify health checks and configuration.
-- [ ] Prepare deployment on Nebius, subject to account access and available resources.
-- [ ] Document deployment and troubleshooting.
+Analyze task type, context size, token demand, complexity hints, latency, budget, quality, privacy, and streaming where supported. Implement `LOW_COST`, `LOW_LATENCY`, `HIGH_QUALITY`, `BALANCED`, `PRIVACY_FIRST`; use a capability registry based on verified/configured facts; implement deterministic policy/planning; explain decisions; estimate cost only when pricing/usage data supports it.
 
-**Completion criterion:** The container works locally and any completed remote deployment is verified.
+**Completion:** different constraints produce tested, explainable decisions.
+**Status:** pending.
 
-## Phase 6 — Hackathon Polish
+## Phase 5 — Reliability, observability, security, and dashboard
 
-- [ ] Add automated tests for key behavior.
-- [ ] Run repeatable performance experiments.
-- [ ] Document the architecture and design decisions.
-- [ ] Prepare a clear demo.
-- [ ] Record actual results without inventing benchmarks.
-- [ ] Review the hackathon submission requirements.
-- [ ] Prepare the final project description and demo materials.
+Add bounded retries for eligible transient errors, fallback only to configured compatible routes, request IDs, safe errors, execution telemetry, secret redaction, input limits, metrics access control, unit/integration/security/end-to-end tests, and a dashboard connected to real data. Add tracing/Prometheus/Grafana only if practical.
 
-**Completion criterion:** The project can be demonstrated, its core claims are verifiable, and the submission materials are ready.
+**Completion:** failure scenarios are tested, telemetry is real, and sensitive data is not exposed.
+**Status:** pending beyond initial endpoint tests.
 
-## Working Principles
+## Phase 6 — Benchmark, packaging, deployment, and hackathon polish
 
-1. Implement and test one component at a time.
-2. Keep secrets out of source control.
-3. Measure performance rather than guessing.
-4. Distinguish planned features from implemented features.
-5. Prioritize a reliable end-to-end demo before adding unnecessary complexity.
+Create repeatable workloads and baseline; measure P50/P95 latency, failure rate, fallback recovery, tokens, and cost where available; record environment and limitations; build/test Docker image and Compose; deploy to Nebius if access/resources allow; re-check current official rules; prepare public repo/license/README/demo/video; verify every claim and submit before deadline.
 
-## Current Status
+**Completion:** another person can run/access the demo and distinguish measurements from estimates.
+**Status:** pending.
 
-The project is currently in the foundation and documentation stage. Application functionality, performance benchmarks, and deployment remain pending until implemented and verified.
+## Future SaaS scope
+
+Track separately: multi-tenant billing, broad provider marketplace, global Kubernetes/GPU fleet, advanced learned routing, enterprise SSO/compliance certification, and full GPU cloud marketplace. These are deferred, not marked complete, and should not block a reliable hackathon vertical slice.
