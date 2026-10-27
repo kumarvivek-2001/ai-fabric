@@ -80,3 +80,46 @@ def test_invalid_routing_mode_is_rejected():
     )
 
     assert response.status_code == 422
+def test_chat_returns_mock_provider_response(monkeypatch):
+    from app import main
+
+    async def mock_create_chat_completion(payload):
+        assert payload["messages"] == [
+            {"role": "user", "content": "Hello"}
+        ]
+        return {
+            "id": "mock-chat-123",
+            "choices": [
+                {
+                    "message": {
+                        "role": "assistant",
+                        "content": "Hello from AI Fabric!",
+                    }
+                }
+            ],
+        }
+
+    monkeypatch.setattr(
+        main,
+        "create_chat_completion",
+        mock_create_chat_completion,
+    )
+
+    response = client.post(
+        "/v1/chat/completions",
+        json={
+            "messages": [
+                {"role": "user", "content": "Hello"}
+            ],
+            "routing_mode": "BALANCED",
+        },
+    )
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["choices"][0]["message"]["content"] == (
+        "Hello from AI Fabric!"
+    )
+    assert body["ai_fabric_routing"]["mode"] == "BALANCED"
+    assert isinstance(body["ai_fabric_metrics"]["latency_ms"], (int, float))
+    assert body["ai_fabric_metrics"]["latency_ms"] >= 0

@@ -1,4 +1,4 @@
-
+import time
 from typing import Any
 
 from fastapi import FastAPI, HTTPException
@@ -33,6 +33,7 @@ def health_check():
 
 @app.post("/v1/chat/completions")
 async def chat_completions(request: ChatCompletionRequest):
+    start_time = time.perf_counter()
     if request.stream:
         raise HTTPException(
             status_code=501,
@@ -67,5 +68,7 @@ async def chat_completions(request: ChatCompletionRequest):
         "mode": decision.mode.value,
         "reason": decision.reason,
     }
+    result["ai_fabric_metrics"] = {
+        "latency_ms": round((time.perf_counter() - start_time) * 1000, 2)
+    }
     return result
-

@@ -132,3 +132,35 @@ async def test_provider_error_returns_502(monkeypatch):
 
     assert exc_info.value.status_code == 502
     assert exc_info.value.detail == "AI provider returned an error."
+
+@pytest.mark.anyio
+async def test_provider_retries_temporary_error(monkeypatch):
+    monkeypatch.setenv(
+        "AI_PROVIDER_BASE_URL",
+        "https://api.tokenfactory.nebius.com/v1",
+    )
+    monkeypatch.setenv("AI_PROVIDER_API_KEY", "test-key")
+    monkeypatch.setenv("AI_PROVIDER_MODEL", "test-model")
+
+    first_response = MagicMock()
+    first_response.status_code = 503
+    first_response.is_error = True
+
+    second_response = MagicMock()
+    second_response.status_code = 200
+    second_response.is_error = False
+    second_response.json.return_value = {"id": "recovered"}
+
+    fake_client = AsyncMock()
+    fake_client.post.side_effect = [first_response, second_response]
+
+    with patch("app.provider.httpx.AsyncClient") as mock_client_class:
+        mock_client_class.return_value.__aenter__.return_value = fake_client
+
+        with patch("app.provider.asyncio.sleep", new_callable=AsyncMock):
+            result = await create_chat_completion(
+                {"messages": [{"role": "user", "content": "Hello"}]}
+            )
+
+    assert result == {"id": "recovered"}
+    assert fake_client.post.await_count == 2
