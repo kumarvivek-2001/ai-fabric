@@ -80,3 +80,20 @@ Open `http://127.0.0.1:8000/docs` for API docs. Stop the server with `Ctrl+C`. F
 4. Never log secrets or commit credentials.
 5. Mark external dependencies `BLOCKED`/`PENDING` with the reason; never silently skip them.
 6. Keep hackathon MVP work separate from future SaaS expansion.
+
+## Latest verification (30 October 2026)
+
+- 20 automated tests passed locally.
+- Docker image built successfully.
+- Docker Compose container started successfully.
+- Container `/health` and `/docs` endpoints returned HTTP 200.
+- Live Nebius NVIDIA-model inference is not yet verified.
+- Multi-provider execution is not yet implemented.
+
+Docker commands:
+- `docker compose up --build -d`
+- `docker compose ps`
+- `docker compose logs --tail=50 ai-fabric`
+- `docker compose down`
+
+The container API is available at `http://127.0.0.1:8001/docs`.

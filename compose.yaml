@@ -1,0 +1,13 @@
+services:
+  ai-fabric:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: ai-fabric
+    ports:
+      - "8001:8000"
+    environment:
+      AI_PROVIDER_BASE_URL: ${AI_PROVIDER_BASE_URL:-}
+      AI_PROVIDER_API_KEY: ${AI_PROVIDER_API_KEY:-}
+      AI_PROVIDER_MODEL: ${AI_PROVIDER_MODEL:-}
+    restart: unless-stopped
